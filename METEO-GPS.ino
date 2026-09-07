@@ -74,7 +74,7 @@ void readSensors() {
 }
 
 /* ---------- LOGIQUE METEO ---------- */
-Meteo computeMeteo() {
+Meteo computeMeteo(float humidity, int diff) {
   if (humidity >= 98)                               return METEO_RAIN;
   if (diff <= 2 && humidity >= 96)                  return METEO_FOG;
   if (diff > 3  && humidity <= 75)                  return METEO_FLYABLE;
@@ -83,7 +83,7 @@ Meteo computeMeteo() {
 }
 
 /* ---------- HEURE LOCALE ---------- */
-LocalTime getLocalTime() {
+LocalTime getLocalTime(const TinyGPSPlus& gps) {
   LocalTime lt;
   long totalSeconds = gps.time.hour()   * 3600L
                     + gps.time.minute() * 60L
@@ -145,7 +145,7 @@ void displayGps() {
   Serial.print(F(" - "));
   if (gps.time.isValid()) {
     Serial.printf("%02u:%02u:%02u UTC", gps.time.hour(), gps.time.minute(), gps.time.second());
-    LocalTime lt = getLocalTime();
+    LocalTime lt = getLocalTime(gps);
     Serial.printf("  ->  %02u:%02u:%02u Local\n", lt.hour, lt.minute, lt.second);
   } else {
     Serial.println(F("Wait"));
@@ -231,7 +231,7 @@ void loop() {
   if (now - tRead >= READ_INTERVAL_MS) {
     tRead = now;
     readSensors();
-    currentMeteo = computeMeteo();
+    currentMeteo = computeMeteo(humidity, diff);
     printSerial();
     displayGps();
     lcdDisp();
